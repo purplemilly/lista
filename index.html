@@ -4,33 +4,42 @@
     <meta charset="UTF-8">
     <title>Minha Lista</title>
     <style>
-        body { font-family: 'Helvetica Neue', sans-serif; background: #f4f2ef; padding: 30px; color: #444; }
+        body { font-family: Helvetica, sans-serif; background: #f4f2ef; padding: 20px; color: #444; }
         .container { max-width: 600px; margin: auto; }
-        h2 { font-size: 2.2em; border-bottom: 3px solid #dcdcdc; margin-top: 40px; }
-        .btn-add { font-size: 2em; cursor: pointer; background: #ddd; padding: 10px 20px; border-radius: 50%; display: inline-block; }
+        h2 { font-size: 2em; border-bottom: 2px solid #ccc; margin-top: 30px; }
+        .input-area { margin-bottom: 20px; }
+        input { font-size: 1.2em; padding: 10px; width: 70%; }
+        button { font-size: 1.2em; padding: 10px; }
         ul { list-style: none; padding: 0; }
-        li { background: #fff; padding: 15px; margin: 10px 0; border-radius: 10px; font-size: 1.5em; cursor: pointer; display: flex; align-items: center; }
-        .riscado { text-decoration: line-through; color: #aaa; opacity: 0.7; }
+        li { background: #fff; padding: 15px; margin: 8px 0; border-radius: 8px; font-size: 1.4em; cursor: pointer; }
+        .riscado { text-decoration: line-through; color: #999; }
     </style>
 </head>
 <body>
     <div class="container">
         <h2>Diárias</h2>
-        <div class="btn-add" onclick="adicionar('listaDia')">+</div>
+        <div class="input-area">
+            <input type="text" id="inDia" placeholder="Nova tarefa...">
+            <button onclick="adicionar('listaDia', 'inDia')">+</button>
+        </div>
         <ul id="listaDia"></ul>
 
         <h2>Semanais</h2>
-        <div class="btn-add" onclick="adicionar('listaSem')">+</div>
+        <div class="input-area">
+            <input type="text" id="inSem" placeholder="Nova tarefa...">
+            <button onclick="adicionar('listaSem', 'inSem')">+</button>
+        </div>
         <ul id="listaSem"></ul>
     </div>
 
     <script>
-        function adicionar(key) {
-            const t = prompt("Tarefa:");
-            if (!t) return;
+        function adicionar(key, inputId) {
+            const campo = document.getElementById(inputId);
+            if (!campo.value) return;
             const lista = JSON.parse(localStorage.getItem(key) || "[]");
-            lista.push({texto: t, feito: false});
+            lista.push({texto: campo.value, feito: false});
             localStorage.setItem(key, JSON.stringify(lista));
+            campo.value = "";
             renderizar();
         }
 
@@ -38,10 +47,7 @@
             ['listaDia', 'listaSem'].forEach(key => {
                 const ul = document.getElementById(key);
                 const itens = JSON.parse(localStorage.getItem(key) || "[]");
-                
-                // Ordenar: itens não feitos primeiro, depois os feitos
                 itens.sort((a, b) => a.feito - b.feito);
-                
                 ul.innerHTML = itens.map((item, i) => `
                     <li class="${item.feito ? 'riscado' : ''}" onclick="alternar('${key}', ${i})">
                         ${item.feito ? '✔️ ' : '☐ '} ${item.texto}
@@ -57,22 +63,13 @@
             renderizar();
         }
 
-        // Lógica de reset
-        const agora = new Date();
-        const dataStr = agora.toDateString();
-        const ultimoReset = localStorage.getItem('lastReset');
-
-        if (ultimoReset !== dataStr) {
-            // Reset Diário
+        // Reset Automático
+        const hoje = new Date().toDateString();
+        if (localStorage.getItem('data') !== hoje) {
             localStorage.removeItem('listaDia');
-            
-            // Reset Semanal (Segunda-feira é dia 1)
-            if (agora.getDay() === 1) {
-                localStorage.removeItem('listaSem');
-            }
-            localStorage.setItem('lastReset', dataStr);
+            if (new Date().getDay() === 1) localStorage.removeItem('listaSem');
+            localStorage.setItem('data', hoje);
         }
-
         renderizar();
     </script>
 </body>
