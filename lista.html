@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Minha Lista</title>
+    <style>
+        body { font-family: 'Helvetica Neue', sans-serif; background: #f4f2ef; padding: 30px; color: #444; }
+        .container { max-width: 600px; margin: auto; }
+        h2 { font-size: 2.2em; border-bottom: 3px solid #dcdcdc; margin-top: 40px; }
+        .btn-add { font-size: 2em; cursor: pointer; background: #ddd; padding: 10px 20px; border-radius: 50%; display: inline-block; }
+        ul { list-style: none; padding: 0; }
+        li { background: #fff; padding: 15px; margin: 10px 0; border-radius: 10px; font-size: 1.5em; cursor: pointer; display: flex; align-items: center; }
+        .riscado { text-decoration: line-through; color: #aaa; opacity: 0.7; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Diárias</h2>
+        <div class="btn-add" onclick="adicionar('listaDia')">+</div>
+        <ul id="listaDia"></ul>
+
+        <h2>Semanais</h2>
+        <div class="btn-add" onclick="adicionar('listaSem')">+</div>
+        <ul id="listaSem"></ul>
+    </div>
+
+    <script>
+        function adicionar(key) {
+            const t = prompt("Tarefa:");
+            if (!t) return;
+            const lista = JSON.parse(localStorage.getItem(key) || "[]");
+            lista.push({texto: t, feito: false});
+            localStorage.setItem(key, JSON.stringify(lista));
+            renderizar();
+        }
+
+        function renderizar() {
+            ['listaDia', 'listaSem'].forEach(key => {
+                const ul = document.getElementById(key);
+                const itens = JSON.parse(localStorage.getItem(key) || "[]");
+                
+                // Ordenar: itens não feitos primeiro, depois os feitos
+                itens.sort((a, b) => a.feito - b.feito);
+                
+                ul.innerHTML = itens.map((item, i) => `
+                    <li class="${item.feito ? 'riscado' : ''}" onclick="alternar('${key}', ${i})">
+                        ${item.feito ? '✔️ ' : '☐ '} ${item.texto}
+                    </li>
+                `).join('');
+            });
+        }
+
+        function alternar(key, i) {
+            const lista = JSON.parse(localStorage.getItem(key));
+            lista[i].feito = !lista[i].feito;
+            localStorage.setItem(key, JSON.stringify(lista));
+            renderizar();
+        }
+
+        // Lógica de reset
+        const agora = new Date();
+        const dataStr = agora.toDateString();
+        const ultimoReset = localStorage.getItem('lastReset');
+
+        if (ultimoReset !== dataStr) {
+            // Reset Diário
+            localStorage.removeItem('listaDia');
+            
+            // Reset Semanal (Segunda-feira é dia 1)
+            if (agora.getDay() === 1) {
+                localStorage.removeItem('listaSem');
+            }
+            localStorage.setItem('lastReset', dataStr);
+        }
+
+        renderizar();
+    </script>
+</body>
+</html>
