@@ -2,12 +2,13 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Lista</title>
+    <title>Minha Lista</title>
     <style>
-        body { font-family: Helvetica, sans-serif; background: #f4f2ef; padding: 20px; }
-        h2 { font-size: 2em; border-bottom: 2px solid #ccc; }
+        body { font-family: Helvetica, sans-serif; background: #f4f2ef; padding: 20px; color: #444; }
+        h2 { font-size: 2em; border-bottom: 2px solid #ccc; margin-top: 20px; }
         ul { list-style: none; padding: 0; }
-        li { background: #fff; padding: 20px; margin: 10px 0; border-radius: 10px; font-size: 1.5em; }
+        li { background: #fff; padding: 20px; margin: 10px 0; border-radius: 10px; font-size: 1.5em; cursor: pointer; }
+        .feito { text-decoration: line-through; color: #aaa; opacity: 0.6; }
     </style>
 </head>
 <body>
@@ -21,9 +22,19 @@
         var s = ["Aspirar Casa", "Passar Pano", "Lavar Roupas", "Verificar/Limpar caixa de areia", "Verificar/Limpar potes de ração", "Verificar/Limpar Fonte de água"];
 
         function render() {
-            document.getElementById("listaDia").innerHTML = d.map(function(t){return "<li>"+t+"</li>"}).join("");
-            document.getElementById("listaSem").innerHTML = s.map(function(t){return "<li>"+t+"</li>"}).join("");
+            document.getElementById("listaDia").innerHTML = d.map(function(t, i){
+                return "<li onclick='riscar(this)'>☐ " + t + "</li>"
+            }).join("");
+            document.getElementById("listaSem").innerHTML = s.map(function(t, i){
+                return "<li onclick='riscar(this)'>☐ " + t + "</li>"
+            }).join("");
         }
+
+        function riscar(el) {
+            el.className = (el.className === 'feito') ? '' : 'feito';
+            el.innerHTML = (el.className === 'feito') ? el.innerHTML.replace('☐', '✔️') : el.innerHTML.replace('✔️', '☐');
+        }
+
         render();
     </script>
 </body>
