@@ -1,100 +1,30 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html>
 <head>
     <meta charset="UTF-8">
-    <title>Minha Lista</title>
+    <title>Lista</title>
     <style>
-        body { font-family: Helvetica, sans-serif; background: #f4f2ef; padding: 20px; color: #444; }
-        .container { max-width: 600px; margin: auto; }
-        h2 { font-size: 2em; border-bottom: 2px solid #ccc; margin-top: 30px; }
-        .input-area { margin-bottom: 20px; }
-        input { font-size: 1.2em; padding: 10px; width: 70%; }
-        button { font-size: 1.2em; padding: 10px; }
+        body { font-family: Helvetica, sans-serif; background: #f4f2ef; padding: 20px; }
+        h2 { font-size: 2em; border-bottom: 2px solid #ccc; }
         ul { list-style: none; padding: 0; }
-        li { background: #fff; padding: 15px; margin: 8px 0; border-radius: 8px; font-size: 1.4em; cursor: pointer; }
-        .riscado { text-decoration: line-through; color: #999; }
+        li { background: #fff; padding: 20px; margin: 10px 0; border-radius: 10px; font-size: 1.5em; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Diárias</h2>
-        <div class="input-area">
-            <input type="text" id="inDia" placeholder="Nova tarefa...">
-            <button onclick="adicionar('listaDia', 'inDia')">+</button>
-        </div>
-        <ul id="listaDia"></ul>
-
-        <h2>Semanais</h2>
-        <div class="input-area">
-            <input type="text" id="inSem" placeholder="Nova tarefa...">
-            <button onclick="adicionar('listaSem', 'inSem')">+</button>
-        </div>
-        <ul id="listaSem"></ul>
-    </div>
+    <h2>Diárias</h2>
+    <ul id="listaDia"></ul>
+    <h2>Semanais</h2>
+    <ul id="listaSem"></ul>
 
     <script>
-        const padraoDia = ["Caixa de Areia Gatos", "Ração Gatos", "Água Gatos", "Lavar Louça", "Encher Garrafas", "Verificar/Aspirar casa", "Dobrar Roupas"];
-        const padraoSem = ["Aspirar Casa", "Passar Pano", "Lavar Roupas", "Verificar/Limpar caixa de areia", "Verificar/Limpar potes de ração", "Verificar/Limpar Fonte de água"];
+        var d = ["Caixa de Areia Gatos", "Ração Gatos", "Água Gatos", "Lavar Louça", "Encher Garrafas", "Verificar/Aspirar casa", "Dobrar Roupas"];
+        var s = ["Aspirar Casa", "Passar Pano", "Lavar Roupas", "Verificar/Limpar caixa de areia", "Verificar/Limpar potes de ração", "Verificar/Limpar Fonte de água"];
 
-        function inicializar() {
-            if (!localStorage.getItem('listaDia')) {
-                localStorage.setItem('listaDia', JSON.stringify(padraoDia.map(t => ({texto: t, feito: false}))));
-            }
-            if (!localStorage.getItem('listaSem')) {
-                localStorage.setItem('listaSem', JSON.stringify(padraoSem.map(t => ({texto: t, feito: false}))));
-            }
+        function render() {
+            document.getElementById("listaDia").innerHTML = d.map(function(t){return "<li>"+t+"</li>"}).join("");
+            document.getElementById("listaSem").innerHTML = s.map(function(t){return "<li>"+t+"</li>"}).join("");
         }
-
-        function adicionar(key, inputId) {
-            const campo = document.getElementById(inputId);
-            if (!campo.value) return;
-            const lista = JSON.parse(localStorage.getItem(key) || "[]");
-            lista.push({texto: campo.value, feito: false});
-            localStorage.setItem(key, JSON.stringify(lista));
-            campo.value = "";
-            renderizar();
-        }
-
-        function renderizar() {
-            ['listaDia', 'listaSem'].forEach(key => {
-                const ul = document.getElementById(key);
-                const itens = JSON.parse(localStorage.getItem(key) || "[]");
-                ul.innerHTML = itens.map((item, i) => `
-                    <li class="${item.feito ? 'riscado' : ''}" 
-                        onclick="alternar('${key}', ${i})" 
-                        oncontextmenu="deletar('${key}', ${i}); return false;">
-                        ${item.feito ? '✔️ ' : '☐ '} ${item.texto}
-                    </li>
-                `).join('');
-            });
-        }
-
-        function alternar(key, i) {
-            const lista = JSON.parse(localStorage.getItem(key));
-            lista[i].feito = !lista[i].feito;
-            localStorage.setItem(key, JSON.stringify(lista));
-            renderizar();
-        }
-
-        function deletar(key, i) {
-            if (confirm("Deletar tarefa?")) {
-                const lista = JSON.parse(localStorage.getItem(key));
-                lista.splice(i, 1);
-                localStorage.setItem(key, JSON.stringify(lista));
-                renderizar();
-            }
-        }
-        // Reset Automático
-        const hoje = new Date().toDateString();
-        if (localStorage.getItem('data') !== hoje) {
-            localStorage.removeItem('listaDia');
-            if (new Date().getDay() === 1) localStorage.removeItem('listaSem');
-            localStorage.setItem('data', hoje);
-            inicializar(); // Recarrega os padrões
-        } else {
-            inicializar();
-        }
-        renderizar();
+        render();
     </script>
 </body>
 </html>
