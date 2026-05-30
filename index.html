@@ -22,10 +22,10 @@
         var s = ["Aspirar Casa", "Passar Pano", "Lavar Roupas", "Verificar/Limpar caixa de areia", "Verificar/Limpar potes de ração", "Verificar/Limpar Fonte de água"];
 
         function render() {
-            document.getElementById("listaDia").innerHTML = d.map(function(t, i){
+            document.getElementById("listaDia").innerHTML = d.map(function(t){
                 return "<li onclick='riscar(this)'>☐ " + t + "</li>"
             }).join("");
-            document.getElementById("listaSem").innerHTML = s.map(function(t, i){
+            document.getElementById("listaSem").innerHTML = s.map(function(t){
                 return "<li onclick='riscar(this)'>☐ " + t + "</li>"
             }).join("");
         }
@@ -34,6 +34,27 @@
             el.className = (el.className === 'feito') ? '' : 'feito';
             el.innerHTML = (el.className === 'feito') ? el.innerHTML.replace('☐', '✔️') : el.innerHTML.replace('✔️', '☐');
         }
+
+        // Lógica de reset inteligente
+        function verificarReset() {
+            var hoje = new Date();
+            var ultimaData = localStorage.getItem('ultimaData');
+            var hojeStr = hoje.toDateString();
+
+            if (ultimaData !== hojeStr) {
+                // Se o dia mudou, recarrega a página para limpar as tarefas
+                // (Como as listas estão no código, o reload limpa os 'riscos')
+                localStorage.setItem('ultimaData', hojeStr);
+                
+                // Reset da semanal: ocorre apenas se hoje for SEGUNDA-FEIRA (dia 1)
+                // Se você quer que a página recarregue toda meia-noite, mas o reset
+                // da semanal só aconteça na segunda, o location.reload() é seguro.
+                location.reload();
+            }
+        }
+
+        // Verifica a cada 60 segundos
+        setInterval(verificarReset, 60000);
 
         render();
     </script>
