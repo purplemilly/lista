@@ -21,41 +21,54 @@
         var d = ["Caixa de Areia Gatos", "Ração Gatos", "Água Gatos", "Lavar Louça", "Encher Garrafas", "Verificar/Aspirar casa", "Dobrar Roupas"];
         var s = ["Aspirar Casa", "Passar Pano", "Lavar Roupas", "Verificar/Limpar caixa de areia", "Verificar/Limpar potes de ração", "Verificar/Limpar Fonte de água"];
 
+        // Carrega o estado das semanais
+        var semanaisFeitas = JSON.parse(localStorage.getItem('semanaisFeitas') || "[]");
+
         function render() {
+            // Renderiza Diárias (sempre limpas)
             document.getElementById("listaDia").innerHTML = d.map(function(t){
-                return "<li onclick='riscar(this)'>☐ " + t + "</li>"
+                return "<li onclick='riscarDia(this)'>☐ " + t + "</li>"
             }).join("");
-            document.getElementById("listaSem").innerHTML = s.map(function(t){
-                return "<li onclick='riscar(this)'>☐ " + t + "</li>"
+
+            // Renderiza Semanais (mantém estado)
+            document.getElementById("listaSem").innerHTML = s.map(function(t, i){
+                var feita = semanaisFeitas.indexOf(i) > -1;
+                return "<li class='"+(feita ? 'feito' : '')+"' onclick='riscarSem(this, "+i+")'>" + 
+                       (feita ? '✔️ ' : '☐ ') + t + "</li>"
             }).join("");
         }
 
-        function riscar(el) {
+        function riscarDia(el) {
             el.className = (el.className === 'feito') ? '' : 'feito';
             el.innerHTML = (el.className === 'feito') ? el.innerHTML.replace('☐', '✔️') : el.innerHTML.replace('✔️', '☐');
         }
 
-        // Lógica de reset inteligente
-        function verificarReset() {
-            var hoje = new Date();
+        function riscarSem(el, i) {
+            var idx = semanaisFeitas.indexOf(i);
+            if (idx > -1) semanaisFeitas.splice(idx, 1);
+            else semanaisFeitas.push(i);
+            localStorage.setItem('semanaisFeitas', JSON.stringify(semanaisFeitas));
+            render();
+        }
+
+        // Lógica de reset
+        function checarReset() {
+            var agora = new Date();
             var ultimaData = localStorage.getItem('ultimaData');
-            var hojeStr = hoje.toDateString();
+            var hojeStr = agora.toDateString();
 
             if (ultimaData !== hojeStr) {
-                // Se o dia mudou, recarrega a página para limpar as tarefas
-                // (Como as listas estão no código, o reload limpa os 'riscos')
+                // Reset da Semanal: se for segunda-feira, limpa tudo
+                if (agora.getDay() === 1) {
+                    localStorage.setItem('semanaisFeitas', "[]");
+                    semanaisFeitas = [];
+                }
                 localStorage.setItem('ultimaData', hojeStr);
-                
-                // Reset da semanal: ocorre apenas se hoje for SEGUNDA-FEIRA (dia 1)
-                // Se você quer que a página recarregue toda meia-noite, mas o reset
-                // da semanal só aconteça na segunda, o location.reload() é seguro.
-                location.reload();
+                location.reload(); // Atualiza a página para limpar as diárias
             }
         }
 
-        // Verifica a cada 60 segundos
-        setInterval(verificarReset, 60000);
-
+        setInterval(checarReset, 60000);
         render();
     </script>
 </body>
